@@ -35,7 +35,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
         private Time mTime;
         private Paint mPaint;
         private Paint mTextPaint;
-        private Calendar mCalendar;
         private boolean mRegisteredTimeZoneReceiver;
 
         final Handler mUpdateTimeHandler = new Handler() {
@@ -91,7 +90,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTextPaint.setColor(Color.WHITE);
 
             mTime = new Time();
-            mCalendar = Calendar.getInstance();
             mTime.setToNow();
         }
 
@@ -121,7 +119,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTime.setToNow();
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int valuesMax[] = {mTime.getActualMaximum(Time.SECOND), mTime.getActualMaximum(Time.MINUTE), mTime.getActualMaximum(Time.HOUR), mTime.getActualMaximum(Time.MONTH_DAY), mTime.getActualMaximum(Calendar.MONTH) + 1};
             int colors[] = new int[valuesCurrent.length];
 
             for (int i = 0; i < valuesCurrent.length; i++) {
