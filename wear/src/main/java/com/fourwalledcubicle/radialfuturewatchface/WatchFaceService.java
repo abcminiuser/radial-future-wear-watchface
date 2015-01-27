@@ -16,6 +16,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.view.SurfaceHolder;
 import android.text.format.Time;
 
+import java.util.Calendar;
 import java.util.TimeZone;
 
 public class WatchFaceService extends CanvasWatchFaceService {
@@ -27,23 +28,12 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine {
 
-        private class InflatableRectF extends RectF {
-            public InflatableRectF(RectF f) { super(f); }
-            public InflatableRectF(Rect r) { super(r); }
-
-            public void inflate(float amount) {
-                this.left   += amount / 2;
-                this.top    += amount / 2;
-                this.right  -= amount / 2;
-                this.bottom -= amount / 2;
-            }
-        }
-
         static final int MSG_UPDATE_TIME = 0;
         static final int INTERACTIVE_UPDATE_RATE_MS = 1000;
 
         private Time mTime;
         private Paint mPaint;
+        private Calendar mCalendar;
         private boolean mRegisteredTimeZoneReceiver;
 
         final Handler mUpdateTimeHandler = new Handler() {
@@ -93,6 +83,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mPaint.setAntiAlias(true);
 
             mTime = new Time();
+            mCalendar = Calendar.getInstance();
             mTime.setToNow();
         }
 
@@ -117,29 +108,31 @@ public class WatchFaceService extends CanvasWatchFaceService {
         public void onDraw(Canvas canvas, Rect bounds) {
             mTime.setToNow();
 
-            int colors[] = {Color.RED, Color.GREEN, Color.BLUE, 0xC32E96, Color.YELLOW};
-            float values[] = {mTime.second / 60.0f, mTime.minute / 60.0f, mTime.hour / 24.0f, mTime.yearDay / 365.0f};
+            float valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
+            float valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int colors[] = new int[valuesCurrent.length];
 
-            for (int i = 0; i < values.length; i++) {
-                float h = (360.0f / values.length) * i;
-                float hsv[] = {h, .75f, .7f};
+            for (int i = 0; i < valuesCurrent.length; i++) {
+                float h = (360.0f / valuesCurrent.length) * i;
+                float hsv[] = {h, 1.0f, 1.0f};
                 colors[i] = Color.HSVToColor(hsv);
             }
 
-            final int width = bounds.width() / values.length;
+            final int width = bounds.width() / valuesCurrent.length;
 
-            InflatableRectF currentBounds = new InflatableRectF(bounds);
-            currentBounds.inflate(width / 2);
+            RectF currentBounds = new RectF(bounds);
+            currentBounds.inset(width / 4, width / 4);
 
             mPaint.setStrokeWidth((int)(.70 * width / 2));
 
-            for (int i = 0; i < values.length; i++) {
-                mPaint.setColor(colors[i]);
+            canvas.drawColor(Color.BLACK);
 
-                float degrees = Math.min(360 * values[i], 360);
+            for (int i = 0; i < valuesCurrent.length; i++) {
+                mPaint.setColor(colors[i]);
+                float degrees = Math.min(360 * (valuesCurrent[i] / valuesMax[i]), 360);
                 canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
 
-                currentBounds.inflate(width);
+                currentBounds.inset(width / 2, width / 2);
             }
         }
 
