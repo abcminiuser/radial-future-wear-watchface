@@ -81,7 +81,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             mPaint = new Paint();
             mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPaint.setStrokeCap(Paint.Cap.BUTT);
             mPaint.setAntiAlias(true);
 
             mTextPaint = new Paint();
@@ -136,7 +136,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             currentBounds.inset(width / 4, width / 4);
 
             mPaint.setStrokeWidth((int) (.65 * width / 2));
-            mTextPaint.setTextSize((int) (.50 * width / 2));
+            mTextPaint.setTextSize((int) (.40 * width / 2));
 
             canvas.drawColor(Color.BLACK);
 
@@ -146,8 +146,11 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
                     mPaint.setColor(colors[i]);
                     canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
-                    canvas.drawText(Integer.toString(valuesCurrent[i]),
-                            currentBounds.left + 1 + (currentBounds.width() / 2), currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
+
+                    String valueString = Integer.toString(valuesCurrent[i]);
+                    canvas.drawText(valueString,
+                            currentBounds.left + (currentBounds.width() / 2) + (mTextPaint.measureText(valueString) / 2) + 1,
+                            currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
