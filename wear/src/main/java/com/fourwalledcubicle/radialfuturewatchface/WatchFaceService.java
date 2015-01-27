@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -33,6 +34,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
         private Time mTime;
         private Paint mPaint;
+        private Paint mTextPaint;
         private Calendar mCalendar;
         private boolean mRegisteredTimeZoneReceiver;
 
@@ -82,6 +84,12 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mPaint.setStrokeCap(Paint.Cap.ROUND);
             mPaint.setAntiAlias(true);
 
+            mTextPaint = new Paint();
+            mTextPaint.setTextAlign(Paint.Align.CENTER);
+            mTextPaint.setShadowLayer(5, 1, 1, Color.BLACK);
+            mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
+            mTextPaint.setColor(Color.WHITE);
+
             mTime = new Time();
             mCalendar = Calendar.getInstance();
             mTime.setToNow();
@@ -108,8 +116,8 @@ public class WatchFaceService extends CanvasWatchFaceService {
         public void onDraw(Canvas canvas, Rect bounds) {
             mTime.setToNow();
 
-            float valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            float valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
+            int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
             int colors[] = new int[valuesCurrent.length];
 
             for (int i = 0; i < valuesCurrent.length; i++) {
@@ -123,14 +131,18 @@ public class WatchFaceService extends CanvasWatchFaceService {
             RectF currentBounds = new RectF(bounds);
             currentBounds.inset(width / 4, width / 4);
 
-            mPaint.setStrokeWidth((int)(.70 * width / 2));
+            mPaint.setStrokeWidth((int) (.70 * width / 2));
+            mTextPaint.setTextSize((int) (.50 * width / 2));
 
             canvas.drawColor(Color.BLACK);
 
             for (int i = 0; i < valuesCurrent.length; i++) {
+                float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
+
                 mPaint.setColor(colors[i]);
-                float degrees = Math.min(360 * (valuesCurrent[i] / valuesMax[i]), 360);
                 canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
+                canvas.drawText(Integer.toString(valuesCurrent[i]),
+                        currentBounds.left + (currentBounds.width() / 2), currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
 
                 currentBounds.inset(width / 2, width / 2);
             }
