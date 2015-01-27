@@ -110,6 +110,10 @@ public class WatchFaceService extends CanvasWatchFaceService {
         @Override
         public void onAmbientModeChanged(boolean inAmbientMode) {
             super.onAmbientModeChanged(inAmbientMode);
+
+            updateTimer();
+
+            invalidate();
         }
 
         @Override
@@ -122,7 +126,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             for (int i = 0; i < valuesCurrent.length; i++) {
                 float h = (360.0f / valuesCurrent.length) * i;
-                float hsv[] = {h, 1.0f, 1.0f};
+                float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
                 colors[i] = Color.HSVToColor(hsv);
             }
 
@@ -131,18 +135,20 @@ public class WatchFaceService extends CanvasWatchFaceService {
             RectF currentBounds = new RectF(bounds);
             currentBounds.inset(width / 4, width / 4);
 
-            mPaint.setStrokeWidth((int) (.70 * width / 2));
+            mPaint.setStrokeWidth((int) (.65 * width / 2));
             mTextPaint.setTextSize((int) (.50 * width / 2));
 
             canvas.drawColor(Color.BLACK);
 
             for (int i = 0; i < valuesCurrent.length; i++) {
-                float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
+                if (!isInAmbientMode() || i != 0) {
+                    float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
 
-                mPaint.setColor(colors[i]);
-                canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
-                canvas.drawText(Integer.toString(valuesCurrent[i]),
-                        currentBounds.left + (currentBounds.width() / 2), currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
+                    mPaint.setColor(colors[i]);
+                    canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
+                    canvas.drawText(Integer.toString(valuesCurrent[i]),
+                            currentBounds.left + 1 + (currentBounds.width() / 2), currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
+                }
 
                 currentBounds.inset(width / 2, width / 2);
             }
