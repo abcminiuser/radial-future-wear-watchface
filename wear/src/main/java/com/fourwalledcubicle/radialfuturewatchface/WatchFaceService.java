@@ -7,8 +7,10 @@ import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -86,7 +88,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             mTextPaint = new Paint();
             mTextPaint.setTextAlign(Paint.Align.CENTER);
-            mTextPaint.setShadowLayer(5, 1, 1, Color.BLACK);
             mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             mTextPaint.setColor(Color.WHITE);
 
@@ -153,10 +154,17 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     mPaint.setColor(colorsFill[i]);
                     canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
 
-                    String valueString = Integer.toString(valuesCurrent[i]);
-                    canvas.drawText(valueString,
+                    Paint mTextBGPaint = new Paint();
+                    mTextBGPaint.setColor(colorsFill[i]);
+                    mTextBGPaint.setShader(
+                            new RadialGradient(
+                                    currentBounds.right,
+                                    currentBounds.top + (currentBounds.height() / 2) - (mTextPaint.getTextSize() / 2),
+                                    mPaint.getStrokeWidth(), Color.BLACK, colorsFill[i], Shader.TileMode.CLAMP));
+                    canvas.drawCircle(currentBounds.right, currentBounds.top + (currentBounds.height() / 2) - (mTextPaint.getTextSize() / 2), mPaint.getStrokeWidth() / 2, mTextBGPaint);
+                    canvas.drawText(Integer.toString(valuesCurrent[i]),
                             currentBounds.right - 1,
-                            currentBounds.top + (currentBounds.height() / 2), mTextPaint);
+                            currentBounds.top + (currentBounds.height() / 2) - 1, mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
