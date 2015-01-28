@@ -14,8 +14,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
-import android.view.SurfaceHolder;
 import android.text.format.Time;
+import android.view.SurfaceHolder;
 
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -130,7 +130,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
 
                 colorsFill[i] = Color.HSVToColor(hsv);
-                hsv[2] /= 2;
+                hsv[2] /= 2.2f;
                 colorsRem[i] = Color.HSVToColor(hsv);
             }
 
@@ -155,8 +155,8 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
                     String valueString = Integer.toString(valuesCurrent[i]);
                     canvas.drawText(valueString,
-                            currentBounds.left + (currentBounds.width() / 2) + (mTextPaint.measureText(valueString) / 2) + 1,
-                            currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
+                            currentBounds.right - 1,
+                            currentBounds.top + (currentBounds.height() / 2), mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
