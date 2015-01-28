@@ -122,12 +122,16 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
             int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
-            int colors[] = new int[valuesCurrent.length];
+            int colorsFill[] = new int[valuesCurrent.length];
+            int colorsRem[] = new int[valuesCurrent.length];
 
             for (int i = 0; i < valuesCurrent.length; i++) {
                 float h = (360.0f / valuesCurrent.length) * i;
                 float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
-                colors[i] = Color.HSVToColor(hsv);
+
+                colorsFill[i] = Color.HSVToColor(hsv);
+                hsv[2] /= 2;
+                colorsRem[i] = Color.HSVToColor(hsv);
             }
 
             final int width = bounds.width() / valuesCurrent.length;
@@ -144,7 +148,9 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 if (!isInAmbientMode() || i != 0) {
                     float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
 
-                    mPaint.setColor(colors[i]);
+                    mPaint.setColor(colorsRem[i]);
+                    canvas.drawArc(currentBounds, 270 + degrees, 360 - degrees, false, mPaint);
+                    mPaint.setColor(colorsFill[i]);
                     canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
 
                     String valueString = Integer.toString(valuesCurrent[i]);
