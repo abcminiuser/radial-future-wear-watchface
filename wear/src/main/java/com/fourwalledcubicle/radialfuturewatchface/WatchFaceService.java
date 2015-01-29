@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -37,6 +39,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
         private Time mTime;
         private Paint mPaint;
         private Paint mTextPaint;
+        private Paint mTextBGPaint;
         private Calendar mCalendar;
         private boolean mRegisteredTimeZoneReceiver;
 
@@ -91,6 +94,8 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             mTextPaint.setColor(Color.WHITE);
 
+            mTextBGPaint = new Paint();
+
             mTime = new Time();
             mCalendar = Calendar.getInstance();
             mTime.setToNow();
@@ -140,8 +145,8 @@ public class WatchFaceService extends CanvasWatchFaceService {
             RectF currentBounds = new RectF(bounds);
             currentBounds.inset(width / 4, width / 4);
 
-            mPaint.setStrokeWidth((int) (.65 * width / 2));
-            mTextPaint.setTextSize((int) (.40 * width / 2));
+            mPaint.setStrokeWidth((int) (.80 * width / 2));
+            mTextPaint.setTextSize((mPaint.getStrokeWidth() / 2) - 2);
 
             canvas.drawColor(Color.BLACK);
 
@@ -150,21 +155,31 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
 
                     mPaint.setColor(colorsRem[i]);
-                    canvas.drawArc(currentBounds, 270 + degrees, 360 - degrees, false, mPaint);
+                    canvas.drawArc(currentBounds, degrees, 360 - degrees, false, mPaint);
                     mPaint.setColor(colorsFill[i]);
-                    canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
+                    canvas.drawArc(currentBounds, 0, degrees, false, mPaint);
 
-                    Paint mTextBGPaint = new Paint();
+                    PointF textLocation = new PointF(
+                            currentBounds.right,
+                            currentBounds.top + (currentBounds.height() / 2));
+
                     mTextBGPaint.setColor(colorsFill[i]);
                     mTextBGPaint.setShader(
                             new RadialGradient(
-                                    currentBounds.right,
-                                    currentBounds.top + (currentBounds.height() / 2) - (mTextPaint.getTextSize() / 2),
-                                    mPaint.getStrokeWidth(), Color.BLACK, colorsFill[i], Shader.TileMode.CLAMP));
-                    canvas.drawCircle(currentBounds.right, currentBounds.top + (currentBounds.height() / 2) - (mTextPaint.getTextSize() / 2), mPaint.getStrokeWidth() / 2, mTextBGPaint);
-                    canvas.drawText(Integer.toString(valuesCurrent[i]),
-                            currentBounds.right - 1,
-                            currentBounds.top + (currentBounds.height() / 2) - 1, mTextPaint);
+                                    textLocation.x,
+                                    textLocation.y,
+                                    mPaint.getStrokeWidth(),
+                                    Color.BLACK, colorsFill[i], Shader.TileMode.CLAMP));
+                    canvas.drawCircle(
+                            textLocation.x,
+                            textLocation.y,
+                            (mPaint.getStrokeWidth() / 2) - 2,
+                            mTextBGPaint);
+                    canvas.drawText(
+                            Integer.toString(valuesCurrent[i]),
+                            textLocation.x - 1,
+                            textLocation.y + (mTextPaint.getTextSize() / 2) - 1,
+                            mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
