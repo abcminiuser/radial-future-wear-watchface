@@ -14,8 +14,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
-import android.view.SurfaceHolder;
 import android.text.format.Time;
+import android.view.SurfaceHolder;
 
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -119,13 +119,17 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTime.setToNow();
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            int valuesMax[] = {mTime.getActualMaximum(Time.SECOND), mTime.getActualMaximum(Time.MINUTE), mTime.getActualMaximum(Time.HOUR), mTime.getActualMaximum(Time.MONTH_DAY), mTime.getActualMaximum(Calendar.MONTH) + 1};
-            int colors[] = new int[valuesCurrent.length];
+            int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int colorsFill[] = new int[valuesCurrent.length];
+            int colorsRem[] = new int[valuesCurrent.length];
 
             for (int i = 0; i < valuesCurrent.length; i++) {
                 float h = (360.0f / valuesCurrent.length) * i;
                 float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
-                colors[i] = Color.HSVToColor(hsv);
+
+                colorsFill[i] = Color.HSVToColor(hsv);
+                hsv[2] /= 2.2f;
+                colorsRem[i] = Color.HSVToColor(hsv);
             }
 
             final int width = bounds.width() / valuesCurrent.length;
@@ -142,13 +146,15 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 if (!isInAmbientMode() || i != 0) {
                     float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
 
-                    mPaint.setColor(colors[i]);
+                    mPaint.setColor(colorsRem[i]);
+                    canvas.drawArc(currentBounds, 270 + degrees, 360 - degrees, false, mPaint);
+                    mPaint.setColor(colorsFill[i]);
                     canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
 
                     String valueString = Integer.toString(valuesCurrent[i]);
                     canvas.drawText(valueString,
-                            currentBounds.left + (currentBounds.width() / 2) + (mTextPaint.measureText(valueString) / 2) + 1,
-                            currentBounds.top + (mTextPaint.getTextSize() / 2) - 1, mTextPaint);
+                            currentBounds.right - 1,
+                            currentBounds.top + (currentBounds.height() / 2), mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
