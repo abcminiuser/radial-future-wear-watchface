@@ -7,8 +7,11 @@ import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +20,6 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
 
-import java.util.Calendar;
 import java.util.TimeZone;
 
 public class WatchFaceService extends CanvasWatchFaceService {
@@ -35,6 +37,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
         private Time mTime;
         private Paint mPaint;
         private Paint mTextPaint;
+        private Paint mTextBGPaint;
         private boolean mRegisteredTimeZoneReceiver;
 
         final Handler mUpdateTimeHandler = new Handler() {
@@ -85,9 +88,10 @@ public class WatchFaceService extends CanvasWatchFaceService {
 
             mTextPaint = new Paint();
             mTextPaint.setTextAlign(Paint.Align.CENTER);
-            mTextPaint.setShadowLayer(5, 1, 1, Color.BLACK);
             mTextPaint.setTypeface(Typeface.DEFAULT_BOLD);
             mTextPaint.setColor(Color.WHITE);
+
+            mTextBGPaint = new Paint();
 
             mTime = new Time();
             mTime.setToNow();
@@ -119,7 +123,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTime.setToNow();
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int valuesMax[] = {mTime.getActualMaximum(mTime.SECOND), mTime.getActualMaximum(mTime.MINUTE), mTime.getActualMaximum(mTime.HOUR), mTime.getActualMaximum(mTime.MONTH_DAY), mTime.getActualMaximum(mTime.MONTH) + 1};
             int colorsFill[] = new int[valuesCurrent.length];
             int colorsRem[] = new int[valuesCurrent.length];
 
@@ -128,7 +132,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
 
                 colorsFill[i] = Color.HSVToColor(hsv);
-                hsv[2] /= 2.2f;
+                hsv[2] /= 3.0f;
                 colorsRem[i] = Color.HSVToColor(hsv);
             }
 
@@ -137,8 +141,8 @@ public class WatchFaceService extends CanvasWatchFaceService {
             RectF currentBounds = new RectF(bounds);
             currentBounds.inset(width / 4, width / 4);
 
-            mPaint.setStrokeWidth((int) (.65 * width / 2));
-            mTextPaint.setTextSize((int) (.40 * width / 2));
+            mPaint.setStrokeWidth((int) (.80 * width / 2));
+            mTextPaint.setTextSize((mPaint.getStrokeWidth() / 2) - 2);
 
             canvas.drawColor(Color.BLACK);
 
@@ -147,14 +151,31 @@ public class WatchFaceService extends CanvasWatchFaceService {
                     float degrees = Math.min(360 * ((float)valuesCurrent[i] / valuesMax[i]), 360);
 
                     mPaint.setColor(colorsRem[i]);
-                    canvas.drawArc(currentBounds, 270 + degrees, 360 - degrees, false, mPaint);
+                    canvas.drawArc(currentBounds, degrees, 360 - degrees, false, mPaint);
                     mPaint.setColor(colorsFill[i]);
-                    canvas.drawArc(currentBounds, 270, degrees, false, mPaint);
+                    canvas.drawArc(currentBounds, 0, degrees, false, mPaint);
 
-                    String valueString = Integer.toString(valuesCurrent[i]);
-                    canvas.drawText(valueString,
-                            currentBounds.right - 1,
-                            currentBounds.top + (currentBounds.height() / 2), mTextPaint);
+                    PointF textLocation = new PointF(
+                            currentBounds.right,
+                            currentBounds.top + (currentBounds.height() / 2));
+
+                    mTextBGPaint.setColor(colorsFill[i]);
+                    mTextBGPaint.setShader(
+                            new RadialGradient(
+                                    textLocation.x,
+                                    textLocation.y,
+                                    mPaint.getStrokeWidth(),
+                                    Color.BLACK, colorsFill[i], Shader.TileMode.CLAMP));
+                    canvas.drawCircle(
+                            textLocation.x,
+                            textLocation.y,
+                            (mPaint.getStrokeWidth() / 2) - 2,
+                            mTextBGPaint);
+                    canvas.drawText(
+                            Integer.toString(valuesCurrent[i]),
+                            textLocation.x - 1,
+                            textLocation.y + (mTextPaint.getTextSize() / 2) - 1,
+                            mTextPaint);
                 }
 
                 currentBounds.inset(width / 2, width / 2);
