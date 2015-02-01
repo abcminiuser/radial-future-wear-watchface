@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
@@ -40,7 +39,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
         private Paint mPaint;
         private Paint mTextPaint;
         private Paint mTextBGPaint;
-        private Calendar mCalendar;
         private boolean mRegisteredTimeZoneReceiver;
 
         final Handler mUpdateTimeHandler = new Handler() {
@@ -97,7 +95,6 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTextBGPaint = new Paint();
 
             mTime = new Time();
-            mCalendar = Calendar.getInstance();
             mTime.setToNow();
         }
 
@@ -127,7 +124,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTime.setToNow();
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            int valuesMax[] = {mCalendar.getActualMaximum(Calendar.SECOND), mCalendar.getActualMaximum(Calendar.MINUTE), mCalendar.getActualMaximum(Calendar.HOUR), mCalendar.getActualMaximum(Calendar.DAY_OF_MONTH), mCalendar.getActualMaximum(Calendar.MONTH) + 1};
+            int valuesMax[] = {mTime.getActualMaximum(mTime.SECOND), mTime.getActualMaximum(mTime.MINUTE), mTime.getActualMaximum(mTime.HOUR), mTime.getActualMaximum(mTime.MONTH_DAY), mTime.getActualMaximum(mTime.MONTH) + 1};
             int colorsFill[] = new int[valuesCurrent.length];
             int colorsRem[] = new int[valuesCurrent.length];
 
@@ -136,7 +133,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
                 float hsv[] = {h, isInAmbientMode() ? 0.0f : 1.0f, isInAmbientMode() ? 0.5f : 1.0f};
 
                 colorsFill[i] = Color.HSVToColor(hsv);
-                hsv[2] /= 2.2f;
+                hsv[2] /= 3.0f;
                 colorsRem[i] = Color.HSVToColor(hsv);
             }
 
