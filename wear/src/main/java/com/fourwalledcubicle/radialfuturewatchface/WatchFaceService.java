@@ -123,7 +123,7 @@ public class WatchFaceService extends CanvasWatchFaceService {
             mTime.setToNow();
 
             int valuesCurrent[] = {mTime.second, mTime.minute, mTime.hour, mTime.monthDay, mTime.month + 1};
-            int valuesMax[] = {mTime.getActualMaximum(mTime.SECOND), mTime.getActualMaximum(mTime.MINUTE), mTime.getActualMaximum(mTime.HOUR), mTime.getActualMaximum(mTime.MONTH_DAY), mTime.getActualMaximum(mTime.MONTH) + 1};
+            int valuesMax[] = {mTime.getActualMaximum(Time.SECOND), mTime.getActualMaximum(Time.MINUTE), mTime.getActualMaximum(Time.HOUR), mTime.getActualMaximum(Time.MONTH_DAY), mTime.getActualMaximum(Time.MONTH) + 1};
             int colorsFill[] = new int[valuesCurrent.length];
             int colorsRem[] = new int[valuesCurrent.length];
 
